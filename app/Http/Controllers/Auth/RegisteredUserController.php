@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
-
 class RegisteredUserController extends Controller
 {
     /**
@@ -24,36 +23,27 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function showForm()
-{
-    return view('auth.register');
-}
-
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(RegisterRequest $request)
-{
-    $data = $request->validated();
+    public function store(RegisterRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
 
-    // Registration logic (create user, login, redirect, etc.)
-}
-
-public function register(RegisterRequest $request)
-{
+        // Registration logic (create user, login, redirect, etc.)
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
+        // Trigger the Registered event
         event(new Registered($user));
 
+        // Log in the user immediately after registration
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        // Redirect to login page with a success message
+        return redirect()->route('login')->with('success', 'Registration successful. Please login.');
     }
-
 }
